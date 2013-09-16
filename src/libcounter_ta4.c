@@ -308,7 +308,7 @@ int cnt_ta4_set_dev_addr ( uint8_array_t *Dest, const char *Addr, const char *Pw
     if ( !__is_valid_addr ( NewAddr ) ) return ASKUE_ERROR;
     
     // подгон размера
-    uint8_array_resize ( Dest, ( size_t ) 16 );
+    uint8_array_resize ( Dest, ( size_t ) CNT_TA4_SET_DEV_ADDR );
     
     // адрес, пароль и команда
     size_t Token = __cnt_ta4_init ( Dest, Addr, Pwd, "A" );
@@ -360,7 +360,7 @@ int cnt_ta4_set_dev_pwd ( uint8_array_t *Dest, const char *Addr, const char *Pwd
     if ( !__is_valid_pwd ( NewPwd ) ) return ASKUE_ERROR;
     
     // подгон размера
-    uint8_array_resize ( Dest, ( size_t ) 18 );
+    uint8_array_resize ( Dest, ( size_t ) CNT_TA4_SET_DEV_PWD );
     // адрес, пароль и команда
     size_t Token = __cnt_ta4_init ( Dest, Addr, Pwd, "P" );
     // новый пароль
