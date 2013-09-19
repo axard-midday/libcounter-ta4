@@ -392,13 +392,6 @@ int __is_betweeni ( int X, int Left, int Right )
     return ( X >= Left ) && ( X <= Right );
 }
 
-// проверка вхождения в диапазон между двумя числами типа double
-static 
-int __is_betweend ( double X, double Left, double Right )
-{
-    return ( X >= Left ) && ( X <= Right );
-}
-
 /* 3 */
 /* Установка категории потребителя */
 int cnt_ta4_set_ckat ( uint8_array_t *Dest, const char *Addr, const char *Pwd, int CKat )
@@ -411,7 +404,7 @@ int cnt_ta4_set_ckat ( uint8_array_t *Dest, const char *Addr, const char *Pwd, i
     if ( !__is_betweeni ( CKat, 0, 99 ) ) return ASKUE_ERROR;
     
     // подгон размера
-    uint8_array_resize ( Dest, ( size_t ) 15 );
+    uint8_array_resize ( Dest, ( size_t ) CNT_TA4_SET_CKAT );
     // адрес, пароль и команда
     size_t Token = __cnt_ta4_init ( Dest, Addr, Pwd, "K" );
     // категория потребителя
@@ -463,7 +456,7 @@ int cnt_ta4_set_elimit ( uint8_array_t *Dest, const char *Addr, const char *Pwd,
     if ( !__is_betweeni ( ELimit, 0, 9999 ) ) return ASKUE_ERROR;
     
     // подгон размера
-    uint8_array_resize ( Dest, ( size_t ) 19 );
+    uint8_array_resize ( Dest, ( size_t ) CNT_TA4_SET_ELIMIT );
     // адрес, пароль и команда
     size_t Token = __cnt_ta4_init ( Dest, Addr, Pwd, "J" );
     // категория потребителя
@@ -586,9 +579,10 @@ int __cnt_ta4_get_tariff_begin ( uint8_array_t *Dest, const char *Addr, const ch
     // Проверка данных
     if ( !__is_betweeni ( WDay, 0, 7 ) ||
          !__is_betweeni ( Mon, 1, 12 ) ) return ASKUE_ERROR;
-    
     // подгон размера
-    uint8_array_resize ( Dest, ( size_t ) 16 );
+    #define CNT_TA4_GET_TARIFF_BEGIN  16
+    uint8_array_resize ( Dest, ( size_t ) CNT_TA4_GET_TARIFF_BEGIN );
+    #undef CNT_TA4_GET_TARIFF_BEGIN 
     // адрес, пароль и команда
     size_t Token = __cnt_ta4_init ( Dest, Addr, Pwd, Cmd );
     // день недели или праздник
@@ -788,7 +782,7 @@ int cnt_ta4_get_plimit ( uint8_array_t *Dest, const char *Addr, const char *Pwd 
 
 /* _12 */
 /* Разбор ответа на команду "Прочитать установленный лимит мощности." */
-int _cnt_ta4_get_plimit ( const uint8_array_t *Dest, const char *Addr, int *Result, double *PLimit )
+int _cnt_ta4_get_plimit ( const uint8_array_t *Dest, const char *Addr, int *Result, int *PLimit )
 {
     // проверить на отрицательный ответ
     int R = __cnt_ta4_simple_ans ( Dest, Addr, "C", Result );
@@ -866,7 +860,7 @@ int __cnt_ta4_get_esum ( const uint8_array_t *Dest, const char *Addr, const char
     if ( ( *Result ) == -1 )
     {
         // категория потребителя
-        double esum = ( double )( __to_hex ( Dest->Item[ 5 ] ) * 10000000 + 
+        int esum = ( int )( __to_hex ( Dest->Item[ 5 ] ) * 10000000 + 
                                     __to_hex ( Dest->Item[ 6 ] ) * 1000000 +
                                     __to_hex ( Dest->Item[ 7 ] ) * 100000 +
                                     __to_hex ( Dest->Item[ 8 ] ) * 10000 +
@@ -877,8 +871,8 @@ int __cnt_ta4_get_esum ( const uint8_array_t *Dest, const char *Addr, const char
         // степень десяти
         int power = __to_hex ( Dest->Item[ 13 ] );
         
-        if ( !__is_betweeni ( esum, 0, 99999999 ) ||
-             !__is_betweeni ( esum, 0, 9 ) ) return ASKUE_ERROR;
+        if ( !__is_betweeni ( esum, ( int ) 0, ( int ) 99999999 ) ||
+             !__is_betweeni ( power, 0, 9 ) ) return ASKUE_ERROR;
         
         ESum->Base = esum;
         ESum->Exp = power;
@@ -1646,7 +1640,7 @@ int __cnt_ta4_get_last_pay ( uint8_array_t *Dest, const char *Addr, const char *
         // год
         int year = __to_hex ( Dest->Item[ 9 ] ) * 10 + __to_hex ( Dest->Item[ 10 ] );
         // значение энергии
-        double energy = ( double )( __to_hex ( Dest->Item[ 11 ] ) * 10000000 + 
+        int energy = ( int )( __to_hex ( Dest->Item[ 11 ] ) * 10000000 + 
                                     __to_hex ( Dest->Item[ 12 ] ) * 1000000 +
                                     __to_hex ( Dest->Item[ 13 ] ) * 100000 +
                                     __to_hex ( Dest->Item[ 14 ] ) * 10000 +
@@ -1660,7 +1654,7 @@ int __cnt_ta4_get_last_pay ( uint8_array_t *Dest, const char *Addr, const char *
         if ( !__is_betweeni ( day, 1, 31 ) ||
              !__is_betweeni ( month, 1, 12 ) ||
              !__is_betweeni ( year, 0, 99 ) ||
-             !__is_betweend ( energy, ( double ) 0, ( double ) 99999999 ) ||
+             !__is_betweeni ( energy, ( int ) 0, ( int ) 99999999 ) ||
              !__is_betweeni ( power, 0, 9 ) ) return ASKUE_ERROR;
         
         // возвращаемое значение
@@ -1774,7 +1768,7 @@ int _cnt_ta4_get_hhour_slice ( uint8_array_t *Dest, const char *Addr, int *Resul
         // квартал
         int quarter = Dest->Item[ 5 ];
         // энергия
-        double energy = ( double )( __to_hex ( Dest->Item[ 6 ] ) * 1000 + 
+        int energy = ( int )( __to_hex ( Dest->Item[ 6 ] ) * 1000 + 
                                      __to_hex ( Dest->Item[ 7 ] ) * 100 +
                                      __to_hex ( Dest->Item[ 8 ] ) * 10 +
                                      __to_hex ( Dest->Item[ 9 ] ) );
@@ -1782,7 +1776,7 @@ int _cnt_ta4_get_hhour_slice ( uint8_array_t *Dest, const char *Addr, int *Resul
         int power = __to_hex ( Dest->Item[ 10 ] );
         // проверка
         if ( !__is_betweeni ( quarter, 0, 3 ) ||
-             !__is_betweend ( energy, 0, ( double ) 99999999 ) ||
+             !__is_betweeni ( energy, 0, ( int ) 99999999 ) ||
              !__is_betweeni ( power, 0, 9 ) )
         {
             return ASKUE_ERROR;
@@ -1902,14 +1896,14 @@ int _cnt_ta4_get_full_tk ( uint8_array_t *Dest, const char *Addr, int *Result,
     if ( ( *Result ) == -1 )
     {
         // коэффициент
-        double tk = ( double )( __to_hex ( Dest->Item[ 5 ] ) * 100 + 
+        int tk = ( int )( __to_hex ( Dest->Item[ 5 ] ) * 100 + 
                                   __to_hex ( Dest->Item[ 6 ] ) * 10 +
                                   __to_hex ( Dest->Item[ 7 ] ) );
         // степень 10
         int power = __to_hex ( Dest->Item[ 10 ] );
         // проверка
         if ( !__is_betweeni ( power, 0, 9 ) ||
-             !__is_betweend ( tk, ( double ) 0, ( double ) 999 ) )
+             !__is_betweeni ( tk, 0, 999 ) )
         {
             return ASKUE_ERROR;
         }

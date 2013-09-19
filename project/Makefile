@@ -4,7 +4,7 @@
 
 project_name := libcounter_ta4
 majorVersion := 0
-minorVersion := 0.1
+minorVersion := 0.3
 fullVersion := $(majorVersion).$(minorVersion)
 source_dirs := ../src
 dest_dir := ../bin
